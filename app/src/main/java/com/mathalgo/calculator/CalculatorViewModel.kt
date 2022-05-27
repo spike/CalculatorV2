@@ -23,12 +23,12 @@ class CalculatorViewModel: ViewModel() {
     }
 
     private fun performDeletion() {
-        state = when {
-            state.number2.isNotBlank() -> state.copy(
+        when {
+            state.number2.isNotBlank() -> state = state.copy(
                 number2 = state.number2.dropLast(1)
             )
-            state.operation != null -> state.copy(operation = null)
-            state.number1.isNotBlank() -> state.copy(
+            state.operation != null -> state = state.copy(operation = null)
+            state.number1.isNotBlank() -> state = state.copy(
                 number1 = state.number1.dropLast(1)
             )
         }
@@ -38,8 +38,8 @@ class CalculatorViewModel: ViewModel() {
     // and replacing the state with another one means that we trigger a recomposition
 
     private fun performCalculation() {
-        var number1: Double = 0.0
-        var number2: Double = 0.0
+        var number1 = 0.0
+        var number2 = 0.0
         if (state.number1.isNotBlank()) number1 = state.number1.toDouble()
         if (state.number2.isNotBlank()) number2 = state.number2.toDouble()
         val result = when(state.operation) {
