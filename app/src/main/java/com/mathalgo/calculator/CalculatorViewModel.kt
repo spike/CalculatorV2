@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import java.nio.file.Files.delete
+import java.nio.file.Files.setPosixFilePermissions
 
 class CalculatorViewModel: ViewModel() {
     var state by mutableStateOf(CalculatorState())
@@ -22,25 +23,87 @@ class CalculatorViewModel: ViewModel() {
     }
 
     private fun performDeletion() {
-        TODO("Not yet implemented")
-        return
+        when {
+            state.number2.isNotBlank() -> state.copy(
+                number2 = state.number2.dropLast(1)
+            )
+            state.operation != null -> state.copy(operation = null)
+            state.number1.isNotBlank() -> state.copy(
+                number1 = state.number1.dropLast(1)
+            )
+
+        }
     }
+    // We're doing copies here because the state is not mutable
+    // and replacing the state with another one means that we trigger a recomposition
 
     private fun performCalculation() {
-        TODO("Not yet implemented")
+        var number1: Double = 0.0
+        var number2: Double = 0.0
+        if (state.number1.isNotBlank()) number1 = state.number1.toDouble()
+        if (state.number2.isNotBlank()) number2 = state.number2.toDouble()
+        val result = when(state.operation) {
+            is CalculatorOperation.Add -> number1 + number2
+            is CalculatorOperation.Subtract -> number1 - number2
+            is CalculatorOperation.Multiply -> number1 * number2
+            is CalculatorOperation.Divide -> number1 / number2
+            else -> 0.0
+        }
+        state = state.copy(
+            number1 = result.toString(),
+            number2 = "",
+            operation = null
+        )
         return
     }
 
     private fun enterOperation(operation: CalculatorOperation) {
-        return
+        if (state.number1.isNotBlank()) {
+            state = state.copy(operation = operation)
+        }
     }
-
+    private fun CharSequence.doesNotContainDecimal(): Boolean {
+        return !isBlank() && !this.contains('.')
+    }
     private fun enterDecimal() {
-        TODO("Not yet implemented")
+        when {
+            state.number2.isNotBlank() -> {
+                if (state.number2.doesNotContainDecimal()) {
+                    state = state.copy(
+                        number2 = state.number2 + "."
+                    )
+                }
+            }
+            state.operation != null -> { // do nothing
+            }
+            state.number1.isNotBlank() -> {
+                if (state.number1.doesNotContainDecimal()) {
+                    state = state.copy(
+                        number1 = state.number1 + "."
+                    )
+                }
+            }
+        }
         return
     }
 
     private fun enterNumber(number: Int) {
+        if (state.number1.length + state.number2.length >= MAX_NUM_LENGTH) {
+            return
+        }
+        state = if (state.operation == null) {
+            state.copy(
+                number1 = state.number1 + number
+            )
+        } else {
+            state.copy(
+                number2 = state.number2 + number
+            )
+        }
         return
+    }
+
+    companion object {
+        private const val MAX_NUM_LENGTH = 20
     }
 }
