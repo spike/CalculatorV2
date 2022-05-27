@@ -23,7 +23,7 @@ class CalculatorViewModel: ViewModel() {
     }
 
     private fun performDeletion() {
-        when {
+        state = when {
             state.number2.isNotBlank() -> state.copy(
                 number2 = state.number2.dropLast(1)
             )
@@ -31,8 +31,8 @@ class CalculatorViewModel: ViewModel() {
             state.number1.isNotBlank() -> state.copy(
                 number1 = state.number1.dropLast(1)
             )
-
         }
+        return
     }
     // We're doing copies here because the state is not mutable
     // and replacing the state with another one means that we trigger a recomposition
@@ -47,10 +47,10 @@ class CalculatorViewModel: ViewModel() {
             is CalculatorOperation.Subtract -> number1 - number2
             is CalculatorOperation.Multiply -> number1 * number2
             is CalculatorOperation.Divide -> number1 / number2
-            else -> 0.0
+            else -> number1
         }
         state = state.copy(
-            number1 = result.toString(),
+            number1 = result.toString().take(15),
             number2 = "",
             operation = null
         )
@@ -104,6 +104,6 @@ class CalculatorViewModel: ViewModel() {
     }
 
     companion object {
-        private const val MAX_NUM_LENGTH = 20
+        private const val MAX_NUM_LENGTH = 7
     }
 }
